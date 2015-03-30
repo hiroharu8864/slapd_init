@@ -1,0 +1,71 @@
+#!/bin/sh
+#
+# chkconfig:       - 20 80
+# description:     LDAP service server
+#
+# processname:     slapd
+# config:          /usr/local/etc/openldap/slapd.conf
+# pidfile:         /usr/local/var/run/slapd.pid
+#
+# source function library
+. /etc/rc.d/init.d/functions
+
+PROGNAME=slapd
+SLAPD=/usr/local/libexec/slapd
+PIDFILE=/usr/local/var/run/slapd.pid
+
+SLAPD_ARGS=
+
+RETVAL=0
+
+case "$1" in
+  'start')
+      echo -n "Starting $PROGNAME: "
+      $SLAPD $SLAPD_ARGS
+
+      RETVAL=$?
+      if [ $RETVAL -eq 0 ] ; then
+          echo "OK"
+      else
+          echo "NG"
+      fi
+      ;;
+  'stop')
+      echo -n "Stopping $PROGNAME: "
+      if [ -r $PIDFILE ] ; then
+          kill -TERM `cat $PIDFILE`
+          RETVAL=$?
+          if [ $RETVAL -eq 0 ] ; then
+              echo "OK"
+          else
+              echo "NG"
+          fi
+      else
+          RETVAL=1
+          echo "NG"
+      fi
+      ;;
+  'restart')
+      $0 stop
+      $0 start
+      ;;
+  'status')
+      if [ -r $PIDFILE ] ; then
+          ps -p `cat $PIDFILE` > /dev/null 2>&1
+          RETVAL=$?
+
+          if [ $RETVAL -eq 0 ] ; then
+              echo "$PROGNAME is running"
+          else
+              echo "$PROGNAME is stopped"
+          fi
+      else
+          echo "$PROGNAME is stopped"
+      fi
+      ;;
+  *)
+      echo "Usage: $0 {start|stop|restart|status}"
+      RETVAL=1
+esac
+
+exit $RETVAL
