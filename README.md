@@ -1,2 +1,4 @@
 # slapd_init
-slapd起動スクリプト
+
+- slapd: slapd起動スクリプト
+- uchiwa: uchiwa起動スクリプト

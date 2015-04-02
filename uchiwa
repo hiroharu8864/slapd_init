@@ -1,0 +1,73 @@
+#!/bin/sh
+#
+# chkconfig:       - 20 80
+# description:     UCHIWA service server
+#
+# processname:     uchiwa
+# pidfile:         /var/run/uchiwa.pid
+#
+# source function library
+. /etc/rc.d/init.d/functions
+
+PROGNAME=uchiwa
+PROGRAM=/opt/uchiwa/bin/uchiwa
+ARGS="-c /etc/sensu/uchiwa.json -p /opt/uchiwa/src/public"
+PIDFILE=/var/run/uchiwa.pid
+LOGFILE=/var/log/uchiwa.log
+ERRFILE=/var/log/uchiwa.err
+
+RETVAL=0
+
+case "$1" in
+  'start')
+      echo -n "Starting $PROGNAME: "
+      $PROGRAM $ARGS >> $LOGFILE 2> $ERRFILE &
+
+      echo $! > $PIDFILE
+
+      RETVAL=$?
+      if [ $RETVAL -eq 0 ] ; then
+          echo "OK"
+      else
+          echo "NG"
+      fi
+      ;;
+  'stop')
+      echo -n "Stopping $PROGNAME: "
+      if [ -r $PIDFILE ] ; then
+          kill -TERM `cat $PIDFILE`
+          RETVAL=$?
+          if [ $RETVAL -eq 0 ] ; then
+              echo "OK"
+          else
+              echo "NG"
+          fi
+      else
+          RETVAL=1
+          echo "NG"
+      fi
+      ;;
+  'restart')
+      $0 stop
+      $0 start
+      ;;
+  'status')
+      if [ -r $PIDFILE ] ; then
+          ps -p `cat $PIDFILE` > /dev/null 2>&1
+          RETVAL=$?
+
+          if [ $RETVAL -eq 0 ] ; then
+              echo "$PROGNAME is running"
+          else
+              echo "$PROGNAME is stopped"
+          fi
+      else
+          echo "$PROGNAME is stopped"
+      fi
+      ;;
+  *)
+      echo "Usage: $0 {start|stop|restart|status}"
+      RETVAL=1
+esac
+
+exit $RETVAL
